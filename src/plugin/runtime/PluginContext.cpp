@@ -1,6 +1,6 @@
 #include "workflow_system/plugin/runtime/PluginContext.hpp"
 #include "workflow_system/plugin/core/IPluginManager.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/plugin/utils/LoggerAdapter.hpp"
 #include "workflow_system/plugin/communication/EventBus.hpp"
 #include "workflow_system/plugin/communication/MessageBus.hpp"
 #include "workflow_system/plugin/communication/DataChannel.hpp"
@@ -235,7 +235,7 @@ PluginContext::PluginContext(const std::string& pluginId,
     logDirectory_ = "./logs/" + pluginId;
 
     // 创建日志器
-    logger_ = &Logger::getLogger(pluginId);
+    logger_ = &WorkflowSystem::Logger::getInstance();
 
     threadPool_ = std::unique_ptr<ThreadPool>(new ThreadPool(4));
 }
@@ -342,7 +342,7 @@ Logger& PluginContext::getLogger() {
 }
 
 void PluginContext::logDebug(const std::string& message) {
-    logger_->debug(message);
+    logger_->info(message);  // 工作流系统的 Logger 没有 debug() 级别，使用 info()
 }
 
 void PluginContext::logInfo(const std::string& message) {

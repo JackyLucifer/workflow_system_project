@@ -1,5 +1,5 @@
 #include "workflow_system/plugin/lifecycle/LifecycleManager.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/core/logger.h"
 #include <algorithm>
 
 namespace WorkflowSystem { namespace Plugin {
@@ -7,7 +7,7 @@ namespace WorkflowSystem { namespace Plugin {
 void LifecycleManager::registerHook(LifecycleEvent event, LifecycleHook hook) {
     std::lock_guard<std::mutex> lock(mutex_);
     hooks_[event].push_back(hook);
-    PF_DEBUG("注册生命周期钩子: " + getEventName(event));
+    LOG_INFO("注册生命周期钩子: " + getEventName(event));
 }
 
 void LifecycleManager::clearHooks() {
@@ -65,16 +65,16 @@ bool LifecycleManager::triggerEvent(const std::string& pluginId, LifecycleEvent 
         }
     }
     
-    PF_DEBUG("触发生命周期事件: " + getEventName(event) + " 插件: " + pluginId);
+    LOG_INFO("触发生命周期事件: " + getEventName(event) + " 插件: " + pluginId);
     
     for (const auto& hook : hooksCopy) {
         try {
             if (!hook(pluginId, event)) {
-                PF_WARN("生命周期钩子返回false: " + getEventName(event));
+                LOG_WARNING("生命周期钩子返回false: " + getEventName(event));
                 return false;
             }
         } catch (const std::exception& e) {
-            PF_ERROR("生命周期钩子异常: " + std::string(e.what()));
+            LOG_ERROR("生命周期钩子异常: " + std::string(e.what()));
             return false;
         }
     }

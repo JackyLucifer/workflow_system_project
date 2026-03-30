@@ -6,6 +6,7 @@
 #include "../communication/Event.hpp"
 #include "../communication/Message.hpp"
 #include "../communication/Channel.hpp"
+#include "workflow_system/core/logger.h"
 #include <functional>
 #include <memory>
 #include <string>
@@ -15,7 +16,7 @@ namespace WorkflowSystem { namespace Plugin {
 
 // 前向声明
 class IPluginManager;
-class Logger;
+// 使用工作流系统的 Logger，不再需要前向声明
 class TimerService;
 class ThreadPool;
 
@@ -170,8 +171,9 @@ public:
 
     /**
      * @brief 获取日志记录器
+     * @note 返回工作流系统的 Logger 实例
      */
-    virtual Logger& getLogger() = 0;
+    virtual WorkflowSystem::Logger& getLogger() = 0;
 
     /**
      * @brief 记录调试日志

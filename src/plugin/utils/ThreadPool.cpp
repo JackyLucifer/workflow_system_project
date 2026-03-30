@@ -1,5 +1,5 @@
 #include "workflow_system/plugin/utils/ThreadPool.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/core/logger.h"
 #include <algorithm>
 
 namespace WorkflowSystem { namespace Plugin {
@@ -37,7 +37,7 @@ void ThreadPool::start() {
         });
     }
     
-    PF_INFO("线程池已启动，线程数: " + std::to_string(threadCount_));
+    LOG_INFO("线程池已启动，线程数: " + std::to_string(threadCount_));
 }
 
 void ThreadPool::stop() {
@@ -62,7 +62,7 @@ void ThreadPool::stop() {
         tasks_.pop();
     }
     
-    PF_INFO("线程池已停止");
+    LOG_INFO("线程池已停止");
 }
 
 void ThreadPool::execute(std::function<void()> task) {
@@ -70,7 +70,7 @@ void ThreadPool::execute(std::function<void()> task) {
         std::lock_guard<std::mutex> lock(queueMutex_);
         
         if (!running_.load()) {
-            PF_WARN("线程池未运行，无法执行任务");
+            LOG_WARNING("线程池未运行，无法执行任务");
             return;
         }
         
@@ -123,9 +123,9 @@ void ThreadPool::workerThread() {
         try {
             task();
         } catch (const std::exception& e) {
-            PF_ERROR("线程池任务执行异常: " + std::string(e.what()));
+            LOG_ERROR("线程池任务执行异常: " + std::string(e.what()));
         } catch (...) {
-            PF_ERROR("线程池任务执行未知异常");
+            LOG_ERROR("线程池任务执行未知异常");
         }
         
         activeThreads_--;
@@ -160,7 +160,7 @@ TimerId TimerService::scheduleDelayed(uint64_t delayMs, std::function<void()> ca
     
     condition_.notify_one();
     
-    PF_DEBUG("创建延迟定时器: " + std::to_string(entry->id) + 
+    LOG_INFO("创建延迟定时器: " + std::to_string(entry->id) + 
              " 延迟: " + std::to_string(delayMs) + "ms");
     
     return entry->id;
@@ -182,7 +182,7 @@ TimerId TimerService::scheduleInterval(uint64_t intervalMs, std::function<void()
     
     condition_.notify_one();
     
-    PF_DEBUG("创建周期定时器: " + std::to_string(entry->id) + 
+    LOG_INFO("创建周期定时器: " + std::to_string(entry->id) + 
              " 间隔: " + std::to_string(intervalMs) + "ms");
     
     return entry->id;
@@ -199,7 +199,7 @@ bool TimerService::cancel(TimerId timerId) {
     it->second->cancelled = true;
     timers_.erase(it);
     
-    PF_DEBUG("取消定时器: " + std::to_string(timerId));
+    LOG_INFO("取消定时器: " + std::to_string(timerId));
     
     return true;
 }
@@ -214,7 +214,7 @@ void TimerService::start() {
         workerThread();
     });
     
-    PF_INFO("定时器服务已启动");
+    LOG_INFO("定时器服务已启动");
 }
 
 void TimerService::stop() {
@@ -233,7 +233,7 @@ void TimerService::stop() {
     std::lock_guard<std::mutex> lock(timersMutex_);
     timers_.clear();
     
-    PF_INFO("定时器服务已停止");
+    LOG_INFO("定时器服务已停止");
 }
 
 size_t TimerService::getActiveTimerCount() const {
@@ -299,9 +299,9 @@ void TimerService::workerThread() {
             try {
                 entry->callback();
             } catch (const std::exception& e) {
-                PF_ERROR("定时器回调执行异常: " + std::string(e.what()));
+                LOG_ERROR("定时器回调执行异常: " + std::string(e.what()));
             } catch (...) {
-                PF_ERROR("定时器回调执行未知异常");
+                LOG_ERROR("定时器回调执行未知异常");
             }
         }
     }

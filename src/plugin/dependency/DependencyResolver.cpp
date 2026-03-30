@@ -1,5 +1,5 @@
 #include "workflow_system/plugin/dependency/DependencyResolver.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/core/logger.h"
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
@@ -10,7 +10,7 @@ void DependencyResolver::addPlugin(const PluginSpec& spec) {
     std::lock_guard<std::mutex> lock(mutex_);
     
     if (spec.id.empty()) {
-        PF_ERROR("无法添加插件：插件ID为空");
+        LOG_ERROR("无法添加插件：插件ID为空");
         return;
     }
     
@@ -24,7 +24,7 @@ void DependencyResolver::addPlugin(const PluginSpec& spec) {
     
     nodes_[spec.id] = node;
     
-    PF_DEBUG("添加插件到依赖解析器: " + spec.id);
+    LOG_INFO("添加插件到依赖解析器: " + spec.id);
 }
 
 void DependencyResolver::removePlugin(const std::string& pluginId) {
@@ -43,7 +43,7 @@ void DependencyResolver::removePlugin(const std::string& pluginId) {
     
     nodes_.erase(it);
     
-    PF_DEBUG("从依赖解析器移除插件: " + pluginId);
+    LOG_INFO("从依赖解析器移除插件: " + pluginId);
 }
 
 void DependencyResolver::clear() {

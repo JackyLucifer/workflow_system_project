@@ -1,5 +1,5 @@
 #include "workflow_system/plugin/communication/MessageBus.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/core/logger.h"
 #include <random>
 #include <sstream>
 #include <iomanip>
@@ -35,7 +35,7 @@ bool MessageBus::registerHandler(const std::string& pluginId,
         statistics_.totalHandlers++;
     }
 
-    PF_DEBUG("注册消息处理器: " + pluginId + "::" + method);
+    LOG_INFO("注册消息处理器: " + pluginId + "::" + method);
 
     return true;
 }
@@ -57,7 +57,7 @@ bool MessageBus::registerAsyncHandler(const std::string& pluginId,
         statistics_.totalHandlers++;
     }
 
-    PF_DEBUG("注册异步消息处理器: " + pluginId + "::" + method);
+    LOG_INFO("注册异步消息处理器: " + pluginId + "::" + method);
 
     return true;
 }
@@ -80,7 +80,7 @@ bool MessageBus::unregisterHandler(const std::string& pluginId,
         statistics_.totalHandlers--;
     }
 
-    PF_DEBUG("注销消息处理器: " + pluginId + "::" + method);
+    LOG_INFO("注销消息处理器: " + pluginId + "::" + method);
 
     return true;
 }
@@ -104,7 +104,7 @@ size_t MessageBus::unregisterAllHandlers(const std::string& pluginId) {
         statistics_.totalHandlers -= count;
     }
 
-    PF_DEBUG("注销插件的所有消息处理器: " + pluginId + " 数量: " + std::to_string(count));
+    LOG_INFO("注销插件的所有消息处理器: " + pluginId + " 数量: " + std::to_string(count));
 
     return count;
 }
@@ -291,7 +291,7 @@ void MessageBus::startBackgroundProcessing() {
         }
     });
 
-    PF_INFO("消息总线后台处理已启动，线程数: " + std::to_string(threadCount_));
+    LOG_INFO("消息总线后台处理已启动，线程数: " + std::to_string(threadCount_));
 }
 
 void MessageBus::stopBackgroundProcessing() {
@@ -323,7 +323,7 @@ void MessageBus::stopBackgroundProcessing() {
     }
 
     workerThreads_.clear();
-    PF_INFO("消息总线后台处理已停止");
+    LOG_INFO("消息总线后台处理已停止");
 }
 
 void MessageBus::waitForCompletion() {
@@ -387,7 +387,7 @@ Response MessageBus::processMessage(const Message& message) {
             return registration->handler(message);
         }
     } catch (const std::exception& e) {
-        PF_ERROR("消息处理器异常: " + std::string(e.what()));
+        LOG_ERROR("消息处理器异常: " + std::string(e.what()));
         return Response::error(std::string("Handler error: ") + e.what());
     }
 }
@@ -418,7 +418,7 @@ void MessageBus::processNotificationQueue() {
         try {
             processMessage(message);
         } catch (const std::exception& e) {
-            PF_ERROR("通知处理异常: " + std::string(e.what()));
+            LOG_ERROR("通知处理异常: " + std::string(e.what()));
         }
     }
 }

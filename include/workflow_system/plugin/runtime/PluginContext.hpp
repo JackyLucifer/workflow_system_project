@@ -3,6 +3,7 @@
 
 #include "workflow_system/plugin/core/IPluginContext.hpp"
 #include "workflow_system/plugin/communication/Channel.hpp"
+#include "workflow_system/core/logger.h"
 #include <map>
 #include <string>
 #include <memory>
@@ -17,7 +18,7 @@ class TimerService;
 class IPluginManager;
 class IEventBus;
 class IMessageBus;
-class Logger;
+// 使用工作流系统的 Logger，不再需要前向声明
 class IDataChannel;
 
 /**
@@ -50,7 +51,7 @@ public:
     bool reloadConfig() override;
 
     // ==================== 日志系统 ====================
-    Logger& getLogger() override;
+    WorkflowSystem::Logger& getLogger() override;
     void logDebug(const std::string& message) override;
     void logInfo(const std::string& message) override;
     void logWarning(const std::string& message) override;
@@ -141,7 +142,7 @@ private:
     std::map<std::string, std::string> config_;
     mutable std::mutex configMutex_;
 
-    Logger* logger_;
+    WorkflowSystem::Logger* logger_;
 
     std::vector<SubscriptionId> subscriptions_;
     mutable std::mutex subscriptionsMutex_;

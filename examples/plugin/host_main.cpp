@@ -15,13 +15,14 @@
 #include <memory>
 #include <thread>
 #include <chrono>
+#include <fstream>
 #include <signal.h>
 
 #include "workflow_system/plugin/core/IPluginManager.hpp"
 #include "workflow_system/plugin/core/IPluginContext.hpp"
 #include "workflow_system/plugin/core/ServiceLocator.hpp"
 #include "workflow_system/plugin/communication/Channel.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/core/logger.h"
 
 using namespace WorkflowSystem::Plugin;
 
@@ -122,7 +123,7 @@ public:
         std::cout << "========================================" << std::endl << std::endl;
         
         // 1. 初始化日志
-        Logger::getLogger("host").setLevel(LogLevel::DEBUG);
+        WorkflowSystem::Logger::getInstance().setLevel(WorkflowSystem::LogLevel::INFO);
         
         // 2. 注册服务（在插件加载前）
         registerServices();

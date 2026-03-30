@@ -1,5 +1,5 @@
 #include "workflow_system/plugin/communication/EventBus.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/core/logger.h"
 #include <algorithm>
 #include <stdexcept>
 
@@ -47,7 +47,7 @@ SubscriptionId EventBus::subscribe(const std::string& subscriberId,
         statistics_.totalSubscriptions++;
     }
 
-    PF_DEBUG("订阅事件: " + eventName + " 订阅者: " + subscriberId);
+    LOG_INFO("订阅事件: " + eventName + " 订阅者: " + subscriberId);
 
     return subscription->id;
 }
@@ -265,7 +265,7 @@ void EventBus::startAsyncProcessing() {
         });
     }
 
-    PF_INFO("事件总线异步处理已启动，线程数: " + std::to_string(threadCount_));
+    LOG_INFO("事件总线异步处理已启动，线程数: " + std::to_string(threadCount_));
 }
 
 void EventBus::stopAsyncProcessing() {
@@ -283,7 +283,7 @@ void EventBus::stopAsyncProcessing() {
     }
 
     workerThreads_.clear();
-    PF_INFO("事件总线异步处理已停止");
+    LOG_INFO("事件总线异步处理已停止");
 }
 
 void EventBus::waitForAsyncEvents() {
@@ -371,7 +371,7 @@ void EventBus::notifySubscribers(const IEvent& event,
             }
 
         } catch (const std::exception& e) {
-            PF_ERROR("事件处理器异常: " + std::string(e.what()));
+            LOG_ERROR("事件处理器异常: " + std::string(e.what()));
             subscription->active = false;
 
             {

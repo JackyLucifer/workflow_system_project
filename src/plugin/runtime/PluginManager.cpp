@@ -1,5 +1,5 @@
 #include "workflow_system/plugin/runtime/PluginManager.hpp"
-#include "workflow_system/plugin/utils/Logger.hpp"
+#include "workflow_system/core/logger.h"
 #include <dlfcn.h>
 #include <stdexcept>
 #include <algorithm>
@@ -42,14 +42,14 @@ int PluginManager::loadPluginsFromDirectory(const std::string& directory,
     // 简化实现：实际应该遍历目录
     // 这里假设我们知道某些插件路径
 
-    PF_INFO("从目录加载插件: " + directory);
+    LOG_INFO("从目录加载插件: " + directory);
 
     return loadedCount;
 }
 
 int PluginManager::loadPluginsFromConfig(const std::string& configFile) {
     // 简化实现：实际应该解析配置文件
-    PF_INFO("从配置文件加载插件: " + configFile);
+    LOG_INFO("从配置文件加载插件: " + configFile);
     return 0;
 }
 
@@ -498,13 +498,13 @@ void PluginManager::setDataDirectory(const std::string& directory) {
 
 bool PluginManager::enableHotReload(const std::string& directory) {
     hotReloadEnabled_.store(true);
-    PF_INFO("热加载已启用: " + directory);
+    LOG_INFO("热加载已启用: " + directory);
     return true;
 }
 
 void PluginManager::disableHotReload() {
     hotReloadEnabled_.store(false);
-    PF_INFO("热加载已禁用");
+    LOG_INFO("热加载已禁用");
 }
 
 bool PluginManager::isHotReloadEnabled() const {
@@ -514,7 +514,7 @@ bool PluginManager::isHotReloadEnabled() const {
 // ==================== 额外功能 ====================
 
 bool PluginManager::initialize() {
-    PF_INFO("初始化插件管理器");
+    LOG_INFO("初始化插件管理器");
 
     // 启动通信总线
     eventBus_->startAsyncProcessing();
@@ -524,7 +524,7 @@ bool PluginManager::initialize() {
 }
 
 void PluginManager::shutdown() {
-    PF_INFO("关闭插件管理器");
+    LOG_INFO("关闭插件管理器");
 
     // 停止所有插件
     stopAllPlugins();
@@ -631,7 +631,7 @@ LoadResult PluginManager::loadPluginInternal(const std::string& pluginPath,
 
     // 自动启动
     if (!plugin->onStart()) {
-        PF_WARN("插件onStart失败，插件将保持已加载状态");
+        LOG_WARNING("插件onStart失败，插件将保持已加载状态");
     } else {
         std::lock_guard<std::mutex> lock(pluginsMutex_);
         plugins_[pluginId]->state = PluginState::RUNNING;
@@ -642,7 +642,7 @@ LoadResult PluginManager::loadPluginInternal(const std::string& pluginPath,
         statistics_.loadedPlugins++;
     }
 
-    PF_INFO("插件加载成功: " + pluginId);
+    LOG_INFO("插件加载成功: " + pluginId);
 
     return LoadResult::ok(pluginId);
 }
@@ -689,7 +689,7 @@ UnloadResult PluginManager::unloadPluginInternal(const std::string& pluginId, bo
         statistics_.loadedPlugins--;
     }
 
-    PF_INFO("插件卸载成功: " + pluginId);
+    LOG_INFO("插件卸载成功: " + pluginId);
 
     return UnloadResult::ok();
 }
@@ -779,7 +779,7 @@ bool PluginManager::checkDependencies(const PluginSpec& spec) {
                 found = true;
                 // 检查版本
                 if (!dep.versionConstraint.satisfies(pair.second->spec.version)) {
-                    PF_ERROR("依赖版本不匹配: " + dep.pluginId);
+                    LOG_ERROR("依赖版本不匹配: " + dep.pluginId);
                     return false;
                 }
                 break;
@@ -787,7 +787,7 @@ bool PluginManager::checkDependencies(const PluginSpec& spec) {
         }
 
         if (!found && dep.required) {
-            PF_ERROR("缺少必需依赖: " + dep.pluginId);
+            LOG_ERROR("缺少必需依赖: " + dep.pluginId);
             return false;
         }
     }
