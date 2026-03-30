@@ -23,10 +23,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# ========== 添加公共库 ==========
+add_subdirectory(${CMAKE_SOURCE_DIR}/../common ${CMAKE_BINARY_DIR}/common)
+
 # ========== 收集源文件 ==========
-file(GLOB_RECURSE WORKFLOW_SOURCES
+# 排除已移到 common/ 的文件
+file(GLOB_RECURSE ALL_SOURCES
     ${CMAKE_SOURCE_DIR}/src/implementations/*.cpp
 )
+
+# 过滤掉已经移到 common 库的源文件
+list(FILTER ALL_SOURCES EXCLUDE REGEX ".*/async_logger\\.cpp$")
+list(FILTER ALL_SOURCES EXCLUDE REGEX ".*/json_config_manager\\.cpp$")
+
+set(WORKFLOW_SOURCES ${ALL_SOURCES})
 
 # ========== 收集插件系统源文件 ==========
 file(GLOB_RECURSE PLUGIN_SOURCES
@@ -37,12 +47,14 @@ file(GLOB_RECURSE PLUGIN_SOURCES
 add_library(workflow_system_static STATIC ${WORKFLOW_SOURCES})
 target_include_directories(workflow_system_static PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/../common/include>
     $<INSTALL_INTERFACE:include>
 )
 
 # 链接必要的依赖
 target_link_libraries(workflow_system_static PUBLIC
     Threads::Threads
+    common_static
 )
 
 # 如果找到 SQLite3，添加链接
@@ -56,12 +68,14 @@ add_library(plugin_framework_core SHARED ${PLUGIN_SOURCES})
 
 target_include_directories(plugin_framework_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/../common/include>
     $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(plugin_framework_core PUBLIC
     Threads::Threads
     ${CMAKE_DL_LIBS}
+    common_static
 )
 
 # 设置输出名称和版本

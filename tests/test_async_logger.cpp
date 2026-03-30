@@ -78,9 +78,9 @@ void testAsyncLogger_LogDebug() {
 void testAsyncLogger_LogWithLevel() {
     auto& logger = AsyncLogger::instance();
 
-    logger.log("Custom log message", LogLevel::INFO);
-    logger.log("Warning message", LogLevel::WARNING);
-    logger.log("Error message", LogLevel::ERROR);
+    logger.log("Custom log message", Common::LogLevel::INFO);
+    logger.log("Warning message", Common::LogLevel::WARNING);
+    logger.log("Error message", Common::LogLevel::ERROR);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 

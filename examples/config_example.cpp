@@ -196,18 +196,18 @@ int main() {
     ConfigValidator validator;
 
     // 添加验证规则
-    validator.addRule(ConfigRules::positiveInteger(
+    validator.addRule(Common::ConfigRules::positiveInteger(
         "workflows.dataImport.timeout",
         "Timeout must be a positive integer"
     ));
 
-    validator.addRule(ConfigRules::range(
+    validator.addRule(Common::ConfigRules::range(
         "orchestrator.maxParallelWorkflows",
         1, 10,
         "Max parallel workflows must be between 1 and 10"
     ));
 
-    validator.addRule(ConfigRules::enumeration(
+    validator.addRule(Common::ConfigRules::enumeration(
         "workflows.dataImport.retry.strategy",
         {"fixed_delay", "exponential_backoff", "linear_backoff", "immediate"},
         "Retry strategy must be one of: fixed_delay, exponential_backoff, linear_backoff, immediate"

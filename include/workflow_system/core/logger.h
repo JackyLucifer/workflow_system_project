@@ -1,160 +1,35 @@
 /**
  * @file logger.h
- * @brief 业务流程管理系统 - 日志模块
+ * @brief 日志模块兼容层（向后兼容）
  *
- * 设计模式：
- * - 单例模式：ConsoleLogger 确保全局唯一日志实例
- * - 接口与实现分离：ILogger 接口，ConsoleLogger 实现
- *
- * 面向对象：
- * - 封装：隐藏日志实现细节
- * - 多态：通过 ILogger 接口支持不同日志实现
+ * 此文件提供向后兼容性，重定向到 common 库
  */
 
 #ifndef WORKFLOW_SYSTEM_LOGGER_H
 #define WORKFLOW_SYSTEM_LOGGER_H
 
-#include <iostream>
-#include <mutex>
-#include <memory>
+#include "common/logger.h"
 
+// 将 Common 命名空间的类引入 WorkflowSystem 命名空间
 namespace WorkflowSystem {
 
-/**
- * @brief 日志级别枚举
- */
-enum class LogLevel {
-    INFO,
-    WARNING,
-    ERROR
-};
+// 导入 LogLevel
+using Common::LogLevel;
 
-/**
- * @brief 日志接口
- *
- * 接口与实现分离：定义日志接口，便于扩展不同的日志实现
- */
-class ILogger {
-public:
-    virtual ~ILogger() = default;
+// 导入 ILogger
+using Common::ILogger;
 
-    virtual void info(const std::string& message) = 0;
-    virtual void warning(const std::string& message) = 0;
-    virtual void error(const std::string& message) = 0;
-    virtual void setLevel(LogLevel level) = 0;
-    virtual LogLevel getLevel() const = 0;
-};
+// 导入 ConsoleLogger
+using Common::ConsoleLogger;
 
-/**
- * @brief 控制台日志实现
- *
- * 设计模式：单例模式
- * 确保整个应用程序只有一个日志实例
- */
-class ConsoleLogger : public ILogger {
-public:
-    // 单例访问点
-    static ConsoleLogger& getInstance() {
-        static ConsoleLogger instance;
-        return instance;
-    }
-
-    // 删除拷贝构造和赋值（单例模式必需）
-    ConsoleLogger(const ConsoleLogger&) = delete;
-    ConsoleLogger& operator=(const ConsoleLogger&) = delete;
-
-    void setLevel(LogLevel level) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        level_ = level;
-    }
-
-    LogLevel getLevel() const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        return level_;
-    }
-
-    void info(const std::string& message) override {
-        if (level_ <= LogLevel::INFO) {
-            log("[INFO]", message);
-        }
-    }
-
-    void warning(const std::string& message) override {
-        if (level_ <= LogLevel::WARNING) {
-            log("[WARNING]", message);
-        }
-    }
-
-    void error(const std::string& message) override {
-        if (level_ <= LogLevel::ERROR) {
-            log("[ERROR]", message);
-        }
-    }
-
-private:
-    ConsoleLogger() : level_(LogLevel::INFO) {}  // 私有构造函数
-
-    void log(const std::string& level, const std::string& message) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        std::cout << level << " " << message << std::endl;
-    }
-
-    mutable std::mutex mutex_;
-    LogLevel level_;
-};
-
-/**
- * @brief 简化的 Logger 类（兼容旧代码）
- */
-class Logger : public ILogger {
-public:
-    static Logger& getInstance() {
-        static Logger instance;
-        return instance;
-    }
-
-    Logger(const Logger&) = delete;
-    Logger& operator=(const Logger&) = delete;
-
-    void setLevel(LogLevel level) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        level_ = level;
-    }
-
-    LogLevel getLevel() const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        return level_;
-    }
-
-    void info(const std::string& message) override {
-        if (level_ <= LogLevel::INFO) {
-            ConsoleLogger::getInstance().info(message);
-        }
-    }
-
-    void warning(const std::string& message) override {
-        if (level_ <= LogLevel::WARNING) {
-            ConsoleLogger::getInstance().warning(message);
-        }
-    }
-
-    void error(const std::string& message) override {
-        if (level_ <= LogLevel::ERROR) {
-            ConsoleLogger::getInstance().error(message);
-        }
-    }
-
-private:
-    Logger() : level_(LogLevel::INFO) {}
-    mutable std::mutex mutex_;
-    LogLevel level_;
-};
-
-// 日志宏 - 便捷访问日志
-#define LOG_INFO(msg) WorkflowSystem::ConsoleLogger::getInstance().info(msg)
-#define LOG_WARNING(msg) WorkflowSystem::ConsoleLogger::getInstance().warning(msg)
-#define LOG_ERROR(msg) WorkflowSystem::ConsoleLogger::getInstance().error(msg)
+// 导入 Logger
+using Common::Logger;
 
 } // namespace WorkflowSystem
+
+// 日志宏保持兼容
+#define LOG_INFO_WF(msg) Common::ConsoleLogger::getInstance().info(msg)
+#define LOG_WARNING_WF(msg) Common::ConsoleLogger::getInstance().warning(msg)
+#define LOG_ERROR_WF(msg) Common::ConsoleLogger::getInstance().error(msg)
 
 #endif // WORKFLOW_SYSTEM_LOGGER_H
