@@ -58,14 +58,26 @@ workflow_system_project/
 ├── include/workflow_system/       # 公共头文件
 │   ├── core/                      # 核心工具（Any、日志、类型、异常）
 │   ├── interfaces/                # 纯虚接口定义
-│   └── implementations/           # 实现类头文件
-├── src/implementations/           # 实现类 .cpp 文件
+│   ├── implementations/           # 实现类头文件
+│   └── plugin/                    # 插件框架头文件
+│       ├── core/                  # 插件核心接口
+│       ├── runtime/               # 运行时管理
+│       ├── communication/         # 事件与消息总线
+│       ├── lifecycle/             # 生命周期管理
+│       ├── dependency/            # 依赖解析
+│       ├── config/                # 配置管理
+│       └── utils/                 # 工具类
+├── src/                           # 源文件
+│   ├── implementations/           # 实现类 .cpp 文件
+│   └── plugin/                    # 插件框架源文件
+├── plugins/                       # 插件示例
+│   └── examples/                  # 示例插件
+│       ├── CalculatorPlugin.cpp/hpp
+│       └── DemoPlugin.cpp/hpp
 ├── examples/                      # 示例程序
+│   └── plugin/                    # 插件宿主程序
 ├── tests/                         # 单元测试
-├── plugins/                       # 插件系统（独立子项目）
-│   ├── include/                   # 插件接口
-│   ├── src/                       # 插件加载器实现
-│   └── examples/                  # 插件示例
+│   └── plugin/                    # 插件系统测试
 └── CMakeLists.txt                 # 构建配置
 ```
 
@@ -257,15 +269,113 @@ if (breaker.allowRequest()) {
 
 ## 插件系统
 
-项目包含独立的插件子系统（`plugins/`），支持：
+项目集成了完整的插件框架（基于 `plugin_framework`），提供企业级插件管理能力：
 
-- 动态插件加载与卸载
-- 插件依赖解析
-- 服务注册与发现
-- 消息总线通信
-- 版本管理
+### 核心功能
 
-详见 `plugins/README.md`。
+- **动态插件加载/卸载**：运行时动态加载 .so 插件
+- **生命周期管理**：完整的插件生命周期（加载、初始化、启动、停止、卸载）
+- **依赖解析**：自动解析插件依赖关系，按正确顺序加载
+- **事件系统**：发布-订阅事件总线，支持插件间通信
+- **消息传递**：插件间异步消息传递机制
+- **服务定位器**：依赖注入和服务注册发现
+- **版本管理**：插件版本约束和兼容性检查
+- **热重载**：支持插件热更新而不中断系统
+
+### 插件接口
+
+```cpp
+#include "workflow_system/plugin/core/IPlugin.hpp"
+
+using namespace WorkflowSystem::Plugin;
+
+class MyPlugin : public IPlugin {
+public:
+    PluginSpec getSpec() const override {
+        PluginSpec spec;
+        spec.id = "com.example.myplugin";
+        spec.name = "My Plugin";
+        spec.version = Version(1, 0, 0);
+        return spec;
+    }
+
+    bool onLoad(IPluginContext* context) override {
+        context->logInfo("插件加载中...");
+        return true;
+    }
+
+    bool onStart() override {
+        // 插件启动逻辑
+        return true;
+    }
+
+    void onStop() override {
+        // 插件停止逻辑
+    }
+
+    // ... 其他接口实现
+};
+```
+
+### 插件导出宏
+
+```cpp
+extern "C" {
+    WorkflowSystem::Plugin::IPlugin* createPlugin() {
+        return new MyPlugin();
+    }
+
+    void destroyPlugin(WorkflowSystem::Plugin::IPlugin* plugin) {
+        delete plugin;
+    }
+}
+```
+
+### 使用示例
+
+```cpp
+#include "workflow_system/plugin/runtime/PluginManager.hpp"
+
+using namespace WorkflowSystem::Plugin;
+
+// 创建插件管理器
+auto manager = std::make_unique<PluginManager>("./plugins");
+
+// 加载插件
+auto result = manager->loadPlugin("./plugins/libdemo_plugin.so");
+
+// 启动所有插件
+manager->startAllPlugins();
+
+// 调用插件方法
+auto* plugin = manager->getPlugin("com.example.demo");
+if (plugin) {
+    Response response = plugin->callMethod("process", "{\"data\":\"test\"}");
+}
+
+// 广播事件
+Event event("custom.event", "sender", {{"key", "value"}});
+manager->broadcastEvent(event);
+```
+
+### 示例插件
+
+项目包含多个示例插件：
+
+- **CalculatorPlugin**：计算器插件，演示基本功能实现
+- **DemoPlugin**：完整演示插件，展示服务注入和异步通讯
+
+编译插件：
+```bash
+# 插件会自动编译到 build/plugins/ 目录
+cd build
+make calculator_plugin demo_plugin
+```
+
+运行插件宿主程序：
+```bash
+./bin/plugin_host
+```
 
 ---
 
@@ -290,6 +400,8 @@ if (breaker.allowRequest()) {
 | `test_memory_pool` | MemoryPool、ObjectPool、线程安全 |
 | `test_async_logger` | 异步日志 |
 | `test_system_facade` | 系统门面 |
+| `test_channel` | 插件框架数据通道 |
+| `test_service_locator` | 插件框架服务定位器 |
 
 ---
 
