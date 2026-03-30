@@ -25,11 +25,11 @@
 #include <future>
 #include <atomic>
 #include <condition_variable>
-#include "interfaces/workflow.h"
-#include "interfaces/resource_manager.h"
-#include "core/types.h"
-#include "core/logger.h"
-#include "core/any.h"
+#include "workflow_system/interfaces/workflow.h"
+#include "workflow_system/interfaces/resource_manager.h"
+#include "workflow_system/core/types.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/core/any.h"
 
 namespace WorkflowSystem {
 
@@ -138,12 +138,6 @@ public:
     void setMessageHandler(MessageHandler handler) override {
         messageHandler_ = handler;
     }
-
-    // IWorkflowObserver 接口实现（空实现，使用(void)消除警告）
-    void onWorkflowStarted(const std::string&) override { /* 默认空实现 */ }
-    void onWorkflowFinished(const std::string&) override { /* 默认空实现 */ }
-    void onWorkflowInterrupted(const std::string&) override { /* 默认空实现 */ }
-    void onWorkflowError(const std::string&, const std::string&) override { /* 默认空实现 */ }
 
     // 模板方法 - 定义工作流生命周期算法骨架
     void start(std::shared_ptr<IWorkflowContext> context) override {

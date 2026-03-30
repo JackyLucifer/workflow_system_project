@@ -12,8 +12,8 @@
 #ifndef WORKFLOW_SYSTEM_RETRY_POLICY_IMPL_H
 #define WORKFLOW_SYSTEM_RETRY_POLICY_IMPL_H
 
-#include "interfaces/retry_policy.h"
-#include "core/logger.h"
+#include "workflow_system/interfaces/retry_policy.h"
+#include "workflow_system/core/logger.h"
 #include <algorithm>
 #include <cmath>
 #include <thread>

@@ -20,8 +20,8 @@
 #include <functional>
 #include <vector>
 #include <future>
-#include "core/types.h"
-#include "core/any.h"
+#include "workflow_system/core/types.h"
+#include "workflow_system/core/any.h"
 #include "workflow_observer.h"
 
 namespace WorkflowSystem {
@@ -56,8 +56,11 @@ using MessageHandler = std::function<void(const IMessage& message)>;
  *
  * 设计模式：策略模式
  * 定义基本工作流行为
+ *
+ * 注意：工作流不再继承观察者接口，而是通过组合方式管理观察者列表
+ * 工作流和观察者是不同的概念，不应该混在一起
  */
-class IWorkflow : public IWorkflowObserver {
+class IWorkflow {
 public:
     virtual ~IWorkflow() = default;
 

@@ -14,11 +14,11 @@
 #include <string>
 #include <memory>
 #include <mutex>
-#include "interfaces/resource_manager.h"
-#include "interfaces/workflow.h"
-#include "core/any.h"
-#include "core/logger.h"
-#include "core/types.h"
+#include "workflow_system/interfaces/resource_manager.h"
+#include "workflow_system/interfaces/workflow.h"
+#include "workflow_system/core/any.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/core/types.h"
 
 namespace WorkflowSystem {
 

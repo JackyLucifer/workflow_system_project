@@ -9,11 +9,11 @@
  * - CallbackObserver: 通过回调函数处理工作流事件
  */
 
-#include "interfaces/workflow_graph.h"
-#include "interfaces/workflow_orchestrator.h"
-#include "implementations/workflow_graph.h"
-#include "implementations/workflow_orchestrator.h"
-#include "implementations/workflow_observer_impl.h"
+#include "workflow_system/interfaces/workflow_graph.h"
+#include "workflow_system/interfaces/workflow_orchestrator.h"
+#include "workflow_system/implementations/workflow_graph.h"
+#include "workflow_system/implementations/workflow_orchestrator.h"
+#include "workflow_system/implementations/workflow_observer_impl.h"
 #include <iostream>
 #include <memory>
 #include <thread>

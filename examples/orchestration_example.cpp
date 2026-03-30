@@ -12,9 +12,9 @@
  * - 条件分支
  */
 
-#include "implementations/workflow_orchestrator.h"
-#include "implementations/workflow_graph.h"
-#include "implementations/json_config_manager.h"
+#include "workflow_system/implementations/workflow_orchestrator.h"
+#include "workflow_system/implementations/workflow_graph.h"
+#include "workflow_system/implementations/json_config_manager.h"
 #include <iostream>
 #include <thread>
 #include <chrono>

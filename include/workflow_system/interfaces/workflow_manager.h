@@ -16,7 +16,7 @@
 #include <functional>
 #include "workflow.h"
 #include "resource_manager.h"
-#include "core/any.h"
+#include "workflow_system/core/any.h"
 
 namespace WorkflowSystem {
 

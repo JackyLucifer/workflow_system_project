@@ -108,7 +108,12 @@ struct TestSuiteResult {
     TEST_ASSERT(std::fabs((expected) - (actual)) < (tolerance),"Float values not equal within tolerance")
 
 #define TEST_ASSERT_STRING_EQUAL(expected, actual) \
-    TEST_ASSERT((expected) == (actual),std::string("String not equal: expected '") + (expected) + "', got '" + (actual) + "'")
+    do { \
+        std::string exp_str(expected); \
+        std::string act_str(actual); \
+        TEST_ASSERT(exp_str == act_str, \
+                   std::string("String not equal: expected '") + exp_str + "', got '" + act_str + "'"); \
+    } while(0)
 
 // ========== 测试用例定义 ==========
 class TestCase {
@@ -182,10 +187,19 @@ public:
         std::cout << "\n" << Colors::CYAN << "========================================" << Colors::RESET << std::endl;
         std::cout << Colors::CYAN << "  运行测试套件: " << suiteName_ << Colors::RESET << std::endl;
         std::cout << Colors::CYAN << "========================================" << Colors::RESET << std::endl;
+        std::cout << "总测试数: " << result.totalTests << std::endl;
+        std::cout.flush();
 
+        int testIndex = 0;
         for (auto& test : tests_) {
+            std::cout << "运行测试 " << (testIndex + 1) << ": " << test.getName() << "..." << std::endl;
+            std::cout.flush();
             test.run();
+            testIndex++;
         }
+
+        std::cout << "所有测试执行完成，开始收集结果..." << std::endl;
+        std::cout.flush();
 
         // 收集结果
         for (const auto& testResult : TestCase::getCurrentResults()) {
@@ -202,6 +216,9 @@ public:
                           << " - " << testResult.message << std::endl;
             }
         }
+
+        std::cout << "结果收集完成" << std::endl;
+        std::cout.flush();
 
         // 打印摘要
         std::cout << "\n" << Colors::CYAN << "----------------------------------------" << Colors::RESET << std::endl;

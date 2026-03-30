@@ -6,9 +6,9 @@
 #ifndef WORKFLOW_SYSTEM_CHECKPOINT_MANAGER_IMPL_H
 #define WORKFLOW_SYSTEM_CHECKPOINT_MANAGER_IMPL_H
 
-#include "interfaces/checkpoint_manager.h"
-#include "core/logger.h"
-#include "core/utils.h"
+#include "workflow_system/interfaces/checkpoint_manager.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/core/utils.h"
 #include <unordered_map>
 #include <deque>
 #include <fstream>

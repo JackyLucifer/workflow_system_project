@@ -3,7 +3,7 @@
  * @brief 业务流程管理系统 - JSON 配置管理器实现
  */
 
-#include "implementations/json_config_manager.h"
+#include "workflow_system/implementations/json_config_manager.h"
 #include <sstream>
 #include <fstream>
 

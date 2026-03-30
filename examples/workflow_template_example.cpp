@@ -9,10 +9,10 @@
  * - 参数化模板实例化
  */
 
-#include "implementations/workflow_template_impl.h"
-#include "implementations/system_facade.h"
-#include "implementations/workflows/base_workflow.h"
-#include "core/logger.h"
+#include "workflow_system/implementations/workflow_template_impl.h"
+#include "workflow_system/implementations/system_facade.h"
+#include "workflow_system/implementations/workflows/base_workflow.h"
+#include "workflow_system/core/logger.h"
 #include <iostream>
 #include <memory>
 #include <thread>

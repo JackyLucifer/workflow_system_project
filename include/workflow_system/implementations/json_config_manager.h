@@ -13,8 +13,8 @@
 #ifndef WORKFLOW_SYSTEM_JSON_CONFIG_MANAGER_H
 #define WORKFLOW_SYSTEM_JSON_CONFIG_MANAGER_H
 
-#include "interfaces/config_manager.h"
-#include "core/logger.h"
+#include "workflow_system/interfaces/config_manager.h"
+#include "workflow_system/core/logger.h"
 #include <mutex>
 #include <sstream>
 #include <algorithm>

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(WorkflowSystem VERSION 1.0 LANGUAGES CXX)
 
-# C++ 标准
-set(CMAKE_CXX_STANDARD 14)  // 使用 C++14 以支持 std::shared_mutex
+# C++ 标准（使用 C++11）
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -18,97 +18,98 @@ if(PKG_CONFIG_FOUND)
     pkg_check_modules(SQLITE3 REQUIRED sqlite3)
 endif()
 
-# ========== 头文件目录 ==========
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/src/implementations)
-
 # ========== 输出目录配置 ==========
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# ========== 创建静态库（头文件库）==========
+# ========== 收集源文件 ==========
+file(GLOB_RECURSE WORKFLOW_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/implementations/*.cpp
+)
 
-# 创建 INTERFACE 库
-add_library(workflow_system INTERFACE)
-target_include_directories(workflow_system INTERFACE
+# ========== 创建静态库 ==========
+add_library(workflow_system_static STATIC ${WORKFLOW_SOURCES})
+target_include_directories(workflow_system_static PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
 # 链接必要的依赖
-target_link_libraries(workflow_system INTERFACE
+target_link_libraries(workflow_system_static PUBLIC
     Threads::Threads
 )
 
+# 如果找到 SQLite3，添加链接
+if(SQLITE3_FOUND)
+    target_link_libraries(workflow_system_static PUBLIC ${SQLITE3_LIBRARIES})
+    target_include_directories(workflow_system_static PRIVATE ${SQLITE3_INCLUDE_DIRS})
+endif()
+
+# 创建别名库，方便使用
+add_library(workflow_system::system ALIAS workflow_system_static)
+
+# ========== 辅助函数：创建示例 ==========
+function(add_workflow_example name)
+    add_executable(${name} examples/${name}.cpp)
+    target_link_libraries(${name} PRIVATE workflow_system_static)
+
+    # 如果需要 SQLite3
+    if(SQLITE3_FOUND)
+        target_link_libraries(${name} PRIVATE ${SQLITE3_LIBRARIES})
+        target_include_directories(${name} PRIVATE ${SQLITE3_INCLUDE_DIRS})
+    endif()
+endfunction()
+
+# ========== 辅助函数：创建测试 ==========
+function(add_workflow_test name)
+    add_executable(${name} tests/${name}.cpp)
+    target_link_libraries(${name} PRIVATE workflow_system_static)
+
+    # 添加测试头文件目录
+    target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/tests)
+
+    # 如果需要 SQLite3
+    if(SQLITE3_FOUND)
+        target_link_libraries(${name} PRIVATE ${SQLITE3_LIBRARIES})
+        target_include_directories(${name} PRIVATE ${SQLITE3_INCLUDE_DIRS})
+    endif()
+endfunction()
+
 # ========== 创建示例可执行文件 ==========
+add_workflow_example(main)
+add_workflow_example(queue_example)
+add_workflow_example(advanced_example)
+add_workflow_example(config_example)
+add_workflow_example(orchestration_example)
+add_workflow_example(observer_example)
+add_workflow_example(comprehensive_example)
+add_workflow_example(persistence_example)
+add_workflow_example(version_control_example)
+add_workflow_example(conditional_example)
+add_workflow_example(workflow_template_example)
+add_workflow_example(scheduler_example)
+add_workflow_example(checkpoint_example)
 
-# 基础示例
-add_executable(workflow_example examples/main.cpp)
-target_link_libraries(workflow_example PRIVATE workflow_system)
 
-add_executable(queue_example examples/queue_example.cpp)
-target_link_libraries(queue_example PRIVATE workflow_system)
+# ========== 创建测试可执行文件 ==========
+add_workflow_test(test_all)
+add_workflow_test(test_core_types)
+add_workflow_test(test_workflow_graph)
+add_workflow_test(test_config_manager)
+add_workflow_test(test_extended_modules)
+add_workflow_test(test_workflow_orchestrator)
+add_workflow_test(test_workflow_persistence)
+add_workflow_test(test_workflow_version_control)
+add_workflow_test(test_workflow_template)
+add_workflow_test(test_conditional_workflow)
+add_workflow_test(test_workflow_observer)
+add_workflow_test(test_workflow_manager)
+add_workflow_test(test_memory_pool)
+add_workflow_test(test_async_logger)
+add_workflow_test(test_system_facade)
 
-add_executable(advanced_example examples/advanced_example.cpp)
-target_link_libraries(advanced_example PRIVATE workflow_system)
-
-# 需要JSON配置的示例
-add_executable(config_example examples/config_example.cpp src/implementations/json_config_manager.cpp)
-target_link_libraries(config_example PRIVATE workflow_system Threads::Threads)
-
-add_executable(orchestration_example examples/orchestration_example.cpp src/implementations/json_config_manager.cpp)
-target_link_libraries(orchestration_example PRIVATE workflow_system Threads::Threads)
-
-add_executable(observer_example examples/observer_example.cpp src/implementations/json_config_manager.cpp)
-target_link_libraries(observer_example PRIVATE workflow_system Threads::Threads)
-
-add_executable(comprehensive_example examples/comprehensive_example.cpp src/implementations/json_config_manager.cpp)
-target_link_libraries(comprehensive_example PRIVATE workflow_system Threads::Threads)
-
-# 需要SQLite的示例
-add_executable(persistence_example examples/persistence_example.cpp src/implementations/sqlite_workflow_persistence.cpp)
-target_link_libraries(persistence_example PRIVATE workflow_system Threads::Threads ${SQLITE3_LIBRARIES})
-target_include_directories(persistence_example PRIVATE ${SQLITE3_INCLUDE_DIRS})
-
-add_executable(version_control_example examples/version_control_example.cpp src/implementations/sqlite_workflow_persistence.cpp)
-target_link_libraries(version_control_example PRIVATE workflow_system Threads::Threads ${SQLITE3_LIBRARIES})
-target_include_directories(version_control_example PRIVATE ${SQLITE3_INCLUDE_DIRS})
-
-# 其他示例
-add_executable(conditional_example examples/conditional_example.cpp)
-target_link_libraries(conditional_example PRIVATE workflow_system Threads::Threads)
-
-add_executable(workflow_template_example examples/workflow_template_example.cpp)
-target_link_libraries(workflow_template_example PRIVATE workflow_system Threads::Threads)
-
-add_executable(scheduler_example examples/scheduler_example.cpp)
-target_link_libraries(scheduler_example PRIVATE workflow_system Threads::Threads)
-
-# 检查点管理器示例
-add_executable(checkpoint_example examples/checkpoint_example.cpp src/implementations/checkpoint_manager_impl.cpp)
-target_link_libraries(checkpoint_example PRIVATE workflow_system Threads::Threads)
-
-# 性能优化示例
-add_executable(performance_optimization_example examples/performance_optimization_example.cpp)
-target_link_libraries(performance_optimization_example PRIVATE workflow_system Threads::Threads)
-
-# 重构功能示例
-add_executable(refactoring_examples examples/refactoring_examples.cpp)
-target_link_libraries(refactoring_examples PRIVATE workflow_system Threads::Threads)
-
-# ========== 测试可执行文件 ==========
-
-add_executable(test_all tests/test_all.cpp)
-target_include_directories(test_all PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/tests)
-target_link_libraries(test_all PRIVATE workflow_system Threads::Threads)
-
-add_executable(test_core_types tests/test_core_types.cpp)
-target_include_directories(test_core_types PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/tests)
-target_link_libraries(test_core_types PRIVATE workflow_system Threads::Threads)
-
-# 测试快捷目标
+# ========== 测试快捷目标 ==========
 add_custom_target(run_tests
     COMMAND ${CMAKE_BINARY_DIR}/bin/test_all
     DEPENDS test_all
@@ -117,30 +118,18 @@ add_custom_target(run_tests
 )
 
 add_custom_target(test
-    COMMAND ${CMAKE_BINARY_DIR}/bin/test_all && ${CMAKE_BINARY_DIR}/bin/test_core_types
-    DEPENDS test_all test_core_types
+    COMMAND ${CMAKE_BINARY_DIR}/bin/test_all
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "运行所有测试..."
+    COMMENT "运行基础测试..."
 )
 
 # ========== 安装规则 ==========
+install(TARGETS workflow_system_static
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+)
 
-# 安装头文件
 install(DIRECTORY include/
     DESTINATION include
     FILES_MATCHING PATTERN "*.h"
 )
-
-# 安装示例程序（可选）
-# install(TARGETS workflow_example queue_example advanced_example
-#     config_example orchestration_example observer_example
-#     comprehensive_example persistence_example version_control_example
-#     conditional_example workflow_template_example scheduler_example
-#     RUNTIME DESTINATION bin/examples
-# )
-
-# ========== 开发模式辅助 ==========
-
-# 如果需要调试，可以添加以下选项
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
-# set(CMAKE_BUILD_TYPE Debug)

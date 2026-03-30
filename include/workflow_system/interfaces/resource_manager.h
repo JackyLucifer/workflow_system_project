@@ -14,7 +14,7 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
-#include "core/types.h"
+#include "workflow_system/core/types.h"
 
 namespace WorkflowSystem {
 

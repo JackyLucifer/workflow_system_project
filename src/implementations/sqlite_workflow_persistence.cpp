@@ -3,7 +3,7 @@
  * @brief 业务流程管理系统 - SQLite 工作流持久化实现
  */
 
-#include "implementations/sqlite_workflow_persistence.h"
+#include "workflow_system/implementations/sqlite_workflow_persistence.h"
 #include <sqlite3.h>
 #include <sstream>
 #include <iostream>
@@ -38,9 +38,50 @@ bool SqliteWorkflowPersistence::initialize(const std::string& databasePath) {
 
     LOG_INFO("[Persistence] Database opened: " + databasePath);
 
+    // 启用 WAL 模式（Write-Ahead Logging）- 提高并发性能
+    const char* walModeSql = "PRAGMA journal_mode=WAL;";
+    char* errorMsg = nullptr;
+    result = sqlite3_exec(db_, walModeSql, nullptr, nullptr, &errorMsg);
+    if (result != SQLITE_OK) {
+        std::string errStr = errorMsg ? errorMsg : "unknown error";
+        LOG_WARNING("[Persistence] Failed to enable WAL mode: " + errStr);
+        if (errorMsg) {
+            sqlite3_free(errorMsg);
+        }
+        // WAL 模式失败不是致命错误，继续执行
+    } else {
+        LOG_INFO("[Persistence] WAL mode enabled");
+    }
+
+    // 设置 WAL 自动检查点（减少 WAL 文件大小）
+    const char* walCheckpointSql = "PRAGMA wal_autocheckpoint=1000;";
+    result = sqlite3_exec(db_, walCheckpointSql, nullptr, nullptr, &errorMsg);
+    if (result != SQLITE_OK) {
+        if (errorMsg) {
+            sqlite3_free(errorMsg);
+        }
+    }
+
+    // 设置同步模式为 NORMAL（平衡性能和安全）
+    const char* syncModeSql = "PRAGMA synchronous=NORMAL;";
+    result = sqlite3_exec(db_, syncModeSql, nullptr, nullptr, &errorMsg);
+    if (result != SQLITE_OK) {
+        if (errorMsg) {
+            sqlite3_free(errorMsg);
+        }
+    }
+
+    // 设置缓存大小（增加缓存提高性能）
+    const char* cacheSizeSql = "PRAGMA cache_size=-10000;";  // 10MB 负值表示 KB
+    result = sqlite3_exec(db_, cacheSizeSql, nullptr, nullptr, &errorMsg);
+    if (result != SQLITE_OK) {
+        if (errorMsg) {
+            sqlite3_free(errorMsg);
+        }
+    }
+
     // 启用外键约束
     const char* foreignKeySql = "PRAGMA foreign_keys = ON;";
-    char* errorMsg = nullptr;
     result = sqlite3_exec(db_, foreignKeySql, nullptr, nullptr, &errorMsg);
     if (result != SQLITE_OK) {
         std::string errStr = errorMsg ? errorMsg : "unknown error";

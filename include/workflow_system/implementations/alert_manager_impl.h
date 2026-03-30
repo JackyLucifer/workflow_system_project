@@ -14,9 +14,9 @@
 #include <mutex>
 #include <deque>
 #include <algorithm>
-#include "interfaces/alert_manager.h"
-#include "core/logger.h"
-#include "core/utils.h"
+#include "workflow_system/interfaces/alert_manager.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/core/utils.h"
 
 namespace WorkflowSystem {
 
@@ -26,335 +26,62 @@ namespace WorkflowSystem {
 class AlertManager : public IAlertManager {
 public:
     AlertManager() : maxHistorySize_(1000) {}
-    
+
     ~AlertManager() override = default;
-    
+
     // ========== 告警规则管理 ==========
-    
-    std::string addAlertRule(const AlertConfig& config) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        std::string alertId = config.alertId;
-        if (alertId.empty()) {
-            alertId = "alert_" + IdGenerator::generate();
-        }
-        
-        AlertConfig newConfig = config;
-        newConfig.alertId = alertId;
-        rules_[alertId] = newConfig;
-        
-        LOG_INFO("[AlertManager] Added alert rule: " + alertId + 
-                 " type: " + alertTypeToString(config.type));
-        
-        return alertId;
-    }
-    
-    bool removeAlertRule(const std::string& alertId) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        auto it = rules_.find(alertId);
-        if (it == rules_.end()) {
-            return false;
-        }
-        
-        rules_.erase(it);
-        LOG_INFO("[AlertManager] Removed alert rule: " + alertId);
-        return true;
-    }
-    
-    bool updateAlertRule(const std::string& alertId, const AlertConfig& config) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        auto it = rules_.find(alertId);
-        if (it == rules_.end()) {
-            return false;
-        }
-        
-        it->second = config;
-        it->second.alertId = alertId;
-        
-        LOG_INFO("[AlertManager] Updated alert rule: " + alertId);
-        return true;
-    }
-    
-    bool enableAlertRule(const std::string& alertId, bool enabled) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        auto it = rules_.find(alertId);
-        if (it == rules_.end()) {
-            return false;
-        }
-        
-        it->second.enabled = enabled;
-        LOG_INFO("[AlertManager] " + std::string(enabled ? "Enabled" : "Disabled") + 
-                 " alert rule: " + alertId);
-        return true;
-    }
-    
+
+    std::string addAlertRule(const AlertConfig& config) override;
+    bool removeAlertRule(const std::string& alertId) override;
+    bool updateAlertRule(const std::string& alertId, const AlertConfig& config) override;
+    bool enableAlertRule(const std::string& alertId, bool enabled) override;
+
     // ========== 告警触发 ==========
-    
+
     void triggerAlert(AlertType type,
                      AlertLevel level,
                      const std::string& workflowName,
                      const std::string& message,
-                     const std::string& details) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        // 检查是否有匹配的告警规则
-        bool hasMatchingRule = false;
-        for (const auto& pair : rules_) {
-            const auto& rule = pair.second;
-            if (rule.enabled && rule.type == type) {
-                if (rule.workflowName.empty() || rule.workflowName == workflowName) {
-                    hasMatchingRule = true;
-                    
-                    // 检查阈值
-                    if (shouldTriggerAlert(rule, workflowName)) {
-                        createAndNotifyAlert(rule, workflowName, message, details);
-                    }
-                }
-            }
-        }
-        
-        // 如果没有匹配规则，使用默认规则创建告警
-        if (!hasMatchingRule) {
-            AlertRecord record;
-            record.alertId = "alert_" + IdGenerator::generate();
-            record.alertName = alertTypeToString(type);
-            record.type = type;
-            record.level = level;
-            record.workflowName = workflowName;
-            record.message = message;
-            record.details = details;
-            record.triggeredAt = TimeUtils::getCurrentMs();
-            record.resolved = false;
-            record.count = 1;
-            
-            activeAlerts_[record.alertId] = record;
-            history_.push_back(record);
-            
-            trimHistory();
-            
-            LOG_WARNING("[AlertManager] Triggered alert: " + record.alertId + 
-                       " level: " + alertLevelToString(level) + " message: " + message);
-            
-            if (callback_) {
-                callback_(record);
-            }
-        }
-    }
-    
-    void resolveAlert(const std::string& alertId) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        auto it = activeAlerts_.find(alertId);
-        if (it == activeAlerts_.end()) {
-            return;
-        }
-        
-        it->second.resolved = true;
-        it->second.resolvedAt = TimeUtils::getCurrentMs();
-        
-        // 更新历史记录
-        for (auto& record : history_) {
-            if (record.alertId == alertId && !record.resolved) {
-                record.resolved = true;
-                record.resolvedAt = it->second.resolvedAt;
-            }
-        }
-        
-        LOG_INFO("[AlertManager] Resolved alert: " + alertId);
-        
-        if (callback_) {
-            callback_(it->second);
-        }
-    }
-    
-    void acknowledgeAlert(const std::string& alertId) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        auto it = activeAlerts_.find(alertId);
-        if (it != activeAlerts_.end()) {
-            LOG_INFO("[AlertManager] Acknowledged alert: " + alertId);
-        }
-    }
-    
+                     const std::string& details) override;
+    void resolveAlert(const std::string& alertId) override;
+    void acknowledgeAlert(const std::string& alertId) override;
+
     // ========== 查询接口 ==========
-    
-    std::vector<AlertRecord> getActiveAlerts() const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        std::vector<AlertRecord> result;
-        for (const auto& pair : activeAlerts_) {
-            if (!pair.second.resolved) {
-                result.push_back(pair.second);
-            }
-        }
-        return result;
-    }
-    
-    std::vector<AlertRecord> getAlertHistory(const std::string& workflowName, int limit) const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        std::vector<AlertRecord> result;
-        for (auto rit = history_.rbegin(); 
-             rit != history_.rend() && static_cast<int>(result.size()) < limit; 
-             ++rit) {
-            if (workflowName.empty() || rit->workflowName == workflowName) {
-                result.push_back(*rit);
-            }
-        }
-        return result;
-    }
-    
-    AlertConfig getAlertRule(const std::string& alertId) const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        auto it = rules_.find(alertId);
-        if (it != rules_.end()) {
-            return it->second;
-        }
-        return AlertConfig();
-    }
-    
-    std::vector<AlertConfig> getAllAlertRules() const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        std::vector<AlertConfig> result;
-        for (const auto& pair : rules_) {
-            result.push_back(pair.second);
-        }
-        return result;
-    }
-    
+
+    std::vector<AlertRecord> getActiveAlerts() const override;
+    std::vector<AlertRecord> getAlertHistory(const std::string& workflowName, int limit) const override;
+    AlertConfig getAlertRule(const std::string& alertId) const override;
+    std::vector<AlertConfig> getAllAlertRules() const override;
+
     // ========== 通知管理 ==========
-    
-    void setAlertCallback(AlertCallback callback) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        callback_ = callback;
-    }
-    
-    bool addNotificationChannel(const std::string& channel, const std::string& config) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        channels_[channel] = config;
-        LOG_INFO("[AlertManager] Added notification channel: " + channel);
-        return true;
-    }
-    
-    bool removeNotificationChannel(const std::string& channel) override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        auto it = channels_.find(channel);
-        if (it != channels_.end()) {
-            channels_.erase(it);
-            LOG_INFO("[AlertManager] Removed notification channel: " + channel);
-            return true;
-        }
-        return false;
-    }
-    
+
+    void setAlertCallback(AlertCallback callback) override;
+    bool addNotificationChannel(const std::string& channel, const std::string& config) override;
+    bool removeNotificationChannel(const std::string& channel) override;
+
     // ========== 统计接口 ==========
-    
-    int getAlertCount(const std::string& workflowName, int64_t timeWindowMs) const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        int count = 0;
-        int64_t cutoffTime = TimeUtils::getCurrentMs() - timeWindowMs;
-        
-        for (const auto& record : history_) {
-            if (record.triggeredAt >= cutoffTime) {
-                if (workflowName.empty() || record.workflowName == workflowName) {
-                    count++;
-                }
-            }
-        }
-        
-        return count;
-    }
-    
-    bool isThresholdExceeded(AlertType type, const std::string& workflowName) const override {
-        std::lock_guard<std::mutex> lock(mutex_);
-        
-        for (const auto& pair : rules_) {
-            const auto& rule = pair.second;
-            if (rule.type == type && rule.enabled) {
-                if (rule.workflowName.empty() || rule.workflowName == workflowName) {
-                    int count = getAlertCountInternal(rule);
-                    if (count >= rule.threshold) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
+
+    int getAlertCount(const std::string& workflowName, int64_t timeWindowMs) const override;
+    bool isThresholdExceeded(AlertType type, const std::string& workflowName) const override;
 
 private:
     mutable std::mutex mutex_;
     int maxHistorySize_;
-    
+
     std::unordered_map<std::string, AlertConfig> rules_;
     std::unordered_map<std::string, AlertRecord> activeAlerts_;
     std::deque<AlertRecord> history_;
     std::unordered_map<std::string, std::string> channels_;
-    
+
     AlertCallback callback_;
-    
-    bool shouldTriggerAlert(const AlertConfig& rule, const std::string& workflowName) {
-        int count = getAlertCountInternal(rule);
-        return count >= rule.threshold;
-    }
-    
-    int getAlertCountInternal(const AlertConfig& rule) const {
-        int64_t cutoffTime = TimeUtils::getCurrentMs() - rule.timeWindowMs;
-        int count = 0;
-        
-        for (const auto& record : history_) {
-            if (record.triggeredAt >= cutoffTime &&
-                record.type == rule.type &&
-                (rule.workflowName.empty() || record.workflowName == rule.workflowName)) {
-                count++;
-            }
-        }
-        
-        return count;
-    }
-    
+
+    bool shouldTriggerAlert(const AlertConfig& rule, const std::string& workflowName);
+    int getAlertCountInternal(const AlertConfig& rule) const;
     void createAndNotifyAlert(const AlertConfig& rule,
                              const std::string& workflowName,
                              const std::string& message,
-                             const std::string& details) {
-        AlertRecord record;
-        record.alertId = "alert_" + IdGenerator::generate();
-        record.alertName = rule.alertId;
-        record.type = rule.type;
-        record.level = rule.level;
-        record.workflowName = workflowName;
-        record.message = message;
-        record.details = details;
-        record.triggeredAt = TimeUtils::getCurrentMs();
-        record.resolved = false;
-        record.count = getAlertCountInternal(rule) + 1;
-        
-        activeAlerts_[record.alertId] = record;
-        history_.push_back(record);
-        
-        trimHistory();
-        
-        LOG_WARNING("[AlertManager] Triggered alert: " + record.alertId + 
-                   " level: " + alertLevelToString(rule.level) + 
-                   " message: " + message);
-        
-        if (callback_) {
-            callback_(record);
-        }
-    }
-    
-    void trimHistory() {
-        while (history_.size() > static_cast<size_t>(maxHistorySize_)) {
-            history_.pop_front();
-        }
-    }
+                             const std::string& details);
+    void trimHistory();
 };
 
 } // namespace WorkflowSystem

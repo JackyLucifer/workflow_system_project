@@ -3,12 +3,12 @@
  * @brief 高级功能示例 - 展示超时控制、重试机制和指标收集
  */
 
-#include "implementations/system_facade.h"
-#include "implementations/workflows/base_workflow.h"
-#include "implementations/timeout_handler.h"
-#include "implementations/retry_policy.h"
-#include "implementations/metrics_collector.h"
-#include "interfaces/workflow_observer.h"
+#include "workflow_system/implementations/system_facade.h"
+#include "workflow_system/implementations/workflows/base_workflow.h"
+#include "workflow_system/implementations/timeout_handler.h"
+#include "workflow_system/implementations/retry_policy.h"
+#include "workflow_system/implementations/metrics_collector.h"
+#include "workflow_system/interfaces/workflow_observer.h"
 #include <iostream>
 #include <thread>
 #include <chrono>

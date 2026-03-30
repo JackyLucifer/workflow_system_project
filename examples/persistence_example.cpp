@@ -11,9 +11,9 @@
  * - 删除和清空工作流记录
  */
 
-#include "implementations/sqlite_workflow_persistence.h"
-#include "interfaces/workflow_persistence.h"
-#include "core/logger.h"
+#include "workflow_system/implementations/sqlite_workflow_persistence.h"
+#include "workflow_system/interfaces/workflow_persistence.h"
+#include "workflow_system/core/logger.h"
 #include <iostream>
 #include <chrono>
 #include <thread>

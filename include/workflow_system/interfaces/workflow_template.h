@@ -18,7 +18,7 @@
 #include "workflow.h"
 #include "workflow_graph.h"
 #include "resource_manager.h"
-#include "core/types.h"
+#include "workflow_system/core/types.h"
 
 namespace WorkflowSystem {
 

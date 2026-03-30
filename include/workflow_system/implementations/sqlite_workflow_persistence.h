@@ -16,8 +16,8 @@
 #ifndef WORKFLOW_SYSTEM_SQLITE_WORKFLOW_PERSISTENCE_H
 #define WORKFLOW_SYSTEM_SQLITE_WORKFLOW_PERSISTENCE_H
 
-#include "interfaces/workflow_persistence.h"
-#include "core/logger.h"
+#include "workflow_system/interfaces/workflow_persistence.h"
+#include "workflow_system/core/logger.h"
 #include <mutex>
 #include <memory>
 

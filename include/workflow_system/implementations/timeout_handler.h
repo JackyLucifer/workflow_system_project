@@ -12,8 +12,8 @@
 #ifndef WORKFLOW_SYSTEM_TIMEOUT_HANDLER_IMPL_H
 #define WORKFLOW_SYSTEM_TIMEOUT_HANDLER_IMPL_H
 
-#include "interfaces/timeout_handler.h"
-#include "core/logger.h"
+#include "workflow_system/interfaces/timeout_handler.h"
+#include "workflow_system/core/logger.h"
 #include <atomic>
 #include <mutex>
 #include <thread>

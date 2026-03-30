@@ -13,8 +13,8 @@
 #ifndef WORKFLOW_SYSTEM_WORKFLOW_ORCHESTRATOR_H
 #define WORKFLOW_SYSTEM_WORKFLOW_ORCHESTRATOR_H
 
-#include "interfaces/workflow_graph.h"
-#include "interfaces/workflow.h"
+#include "workflow_system/interfaces/workflow_graph.h"
+#include "workflow_system/interfaces/workflow.h"
 #include <functional>
 #include <memory>
 #include <vector>

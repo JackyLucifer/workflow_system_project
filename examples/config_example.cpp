@@ -10,9 +10,9 @@
  * - 环境变量替换
  */
 
-#include "implementations/system_facade.h"
-#include "implementations/json_config_manager.h"
-#include "implementations/workflows/base_workflow.h"
+#include "workflow_system/implementations/system_facade.h"
+#include "workflow_system/implementations/json_config_manager.h"
+#include "workflow_system/implementations/workflows/base_workflow.h"
 #include <iostream>
 #include <thread>
 #include <chrono>

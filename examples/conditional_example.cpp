@@ -9,10 +9,10 @@
  * - 设置默认分支
  */
 
-#include "implementations/conditional_workflow_impl.h"
-#include "implementations/workflows/base_workflow.h"
-#include "implementations/system_facade.h"
-#include "core/logger.h"
+#include "workflow_system/implementations/conditional_workflow_impl.h"
+#include "workflow_system/implementations/workflows/base_workflow.h"
+#include "workflow_system/implementations/system_facade.h"
+#include "workflow_system/core/logger.h"
 #include <iostream>
 #include <memory>
 #include <thread>

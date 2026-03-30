@@ -12,8 +12,8 @@
 #include <memory>
 #include <vector>
 #include <functional>
-#include "core/types.h"
-#include "core/any.h"
+#include "workflow_system/core/types.h"
+#include "workflow_system/core/any.h"
 
 namespace WorkflowSystem {
 

@@ -12,11 +12,11 @@
 
 #include <map>
 #include <algorithm>
-#include "interfaces/workflow_template.h"
-#include "implementations/workflow_graph.h"
-#include "implementations/workflows/base_workflow.h"
-#include "core/logger.h"
-#include "core/types.h"
+#include "workflow_system/interfaces/workflow_template.h"
+#include "workflow_system/implementations/workflow_graph.h"
+#include "workflow_system/implementations/workflows/base_workflow.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/core/types.h"
 
 namespace WorkflowSystem {
 
@@ -35,91 +35,31 @@ protected:
 
 public:
     AbstractWorkflowTemplate(const std::string& id, const std::string& name,
-                        const std::string& desc, const std::string& ver)
-        : templateId_(id), templateName_(name),
-          description_(desc), version_(ver) {}
+                        const std::string& desc, const std::string& ver);
 
-    virtual ~AbstractWorkflowTemplate() = default;
+    virtual ~AbstractWorkflowTemplate();
 
     // ========== 模板元数据 ==========
 
-    std::string getTemplateId() const override {
-        return templateId_;
-    }
+    std::string getTemplateId() const override;
 
-    std::string getTemplateName() const override {
-        return templateName_;
-    }
+    std::string getTemplateName() const override;
 
-    std::string getDescription() const override {
-        return description_;
-    }
+    std::string getDescription() const override;
 
-    std::string getVersion() const override {
-        return version_;
-    }
+    std::string getVersion() const override;
 
     // ========== 参数管理 ==========
 
-    std::vector<TemplateParameter> getParameters() const override {
-        return parameters_;
-    }
+    std::vector<TemplateParameter> getParameters() const override;
 
-    bool validateParameters(const std::map<std::string, Any>& params) const override {
-        // 检查必填参数
-        for (const auto& param : parameters_) {
-            if (param.required && params.find(param.name) == params.end()) {
-                LOG_WARNING("[AbstractWorkflowTemplate] Required parameter '" +
-                         param.name + "' is missing for template '" + templateId_ + "'");
-                return false;
-            }
-
-            // 验证参数类型
-            auto it = params.find(param.name);
-            if (it != params.end()) {
-                // 使用 typeid 比较进行类型验证
-                if (param.type == "int" && typeid(int) != it->second.type()) {
-                    LOG_WARNING("[AbstractWorkflowTemplate] Parameter '" + param.name +
-                                 "' should be int for template '" + templateId_ + "'");
-                    return false;
-                }
-                if (param.type == "string" && typeid(std::string) != it->second.type()) {
-                    LOG_WARNING("[AbstractWorkflowTemplate] Parameter '" + param.name +
-                                 "' should be string for template '" + templateId_ + "'");
-                    return false;
-                }
-                if (param.type == "bool" && typeid(bool) != it->second.type()) {
-                    LOG_WARNING("[AbstractWorkflowTemplate] Parameter '" + param.name +
-                                 "' should be bool for template '" + templateId_ + "'");
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
+    bool validateParameters(const std::map<std::string, Any>& params) const override;
 
 protected:
-    void addParameter(const TemplateParameter& param) {
-        parameters_.push_back(param);
-    }
+    void addParameter(const TemplateParameter& param);
 
     Any getParameter(const std::map<std::string, Any>& params,
-                   const std::string& name) const {
-        auto it = params.find(name);
-        if (it != params.end()) {
-            return it->second;
-        }
-
-        // 查找默认值
-        for (const auto& param : parameters_) {
-            if (param.name == name) {
-                return param.defaultValue;
-            }
-        }
-
-        return Any();
-    }
+                   const std::string& name) const;
 };
 
 /**
@@ -130,51 +70,25 @@ private:
     std::map<std::string, std::shared_ptr<IWorkflowTemplate>> templates_;
 
 public:
-    WorkflowTemplateRegistry() {
-        LOG_INFO("[WorkflowTemplateRegistry] Created");
-    }
+    WorkflowTemplateRegistry();
 
-    virtual ~WorkflowTemplateRegistry() {
-        templates_.clear();
-        LOG_INFO("[WorkflowTemplateRegistry] Destroyed");
-    }
+    virtual ~WorkflowTemplateRegistry();
 
     // ========== 模板注册 ==========
 
     void registerTemplate(const std::string& templateId,
-                               std::shared_ptr<IWorkflowTemplate> templateDef) override {
-        templates_[templateId] = templateDef;
-        LOG_INFO("[WorkflowTemplateRegistry] Registered template: " + templateId +
-                 " (" + templateDef->getTemplateName() + ")");
-    }
+                         std::shared_ptr<IWorkflowTemplate> templateDef) override;
 
-    void unregisterTemplate(const std::string& templateId) override {
-        templates_.erase(templateId);
-        LOG_INFO("[WorkflowTemplateRegistry] Unregistered template: " + templateId);
-    }
+    void unregisterTemplate(const std::string& templateId) override;
 
-    bool hasTemplate(const std::string& templateId) const override {
-        return templates_.find(templateId) != templates_.end();
-    }
+    bool hasTemplate(const std::string& templateId) const override;
 
     // ========== 模板查询 ==========
 
-    std::vector<std::string> listTemplates() const override {
-        std::vector<std::string> result;
-        for (const auto& pair : templates_) {
-            result.push_back(pair.first);
-        }
-        return result;
-    }
+    std::vector<std::string> listTemplates() const override;
 
     std::shared_ptr<IWorkflowTemplate> getTemplate(
-        const std::string& templateId) const override {
-        auto it = templates_.find(templateId);
-        if (it != templates_.end()) {
-            return it->second;
-        }
-        return nullptr;
-    }
+        const std::string& templateId) const override;
 
     // ========== 模板创建 ==========
 
@@ -182,40 +96,12 @@ public:
         const std::string& templateId,
         const std::map<std::string, Any>& params,
         std::shared_ptr<IResourceManager> resourceManager
-    ) const override {
-        auto templateDef = getTemplate(templateId);
-        if (!templateDef) {
-            LOG_ERROR("[WorkflowTemplateRegistry] Template not found: " + templateId);
-            return nullptr;
-        }
-
-        // 验证参数
-        if (!templateDef->validateParameters(params)) {
-            LOG_ERROR("[WorkflowTemplateRegistry] Parameter validation failed for template: " + templateId);
-            return nullptr;
-        }
-
-        return templateDef->createWorkflow(params, resourceManager);
-    }
+    ) const override;
 
     std::shared_ptr<IWorkflowGraph> createGraphFromTemplate(
         const std::string& templateId,
         const std::map<std::string, Any>& params
-    ) const override {
-        auto templateDef = getTemplate(templateId);
-        if (!templateDef) {
-            LOG_ERROR("[WorkflowTemplateRegistry] Template not found: " + templateId);
-            return nullptr;
-        }
-
-        // 验证参数
-        if (!templateDef->validateParameters(params)) {
-            LOG_ERROR("[WorkflowTemplateRegistry] Parameter validation failed for template: " + templateId);
-            return nullptr;
-        }
-
-        return templateDef->createGraph(params);
-    }
+    ) const override;
 };
 
 /**
@@ -226,16 +112,11 @@ private:
     std::map<std::string, Any> parameters_;
 
 public:
-    TemplateParameterBuilder() {
-        LOG_INFO("[TemplateParameterBuilder] Created");
-    }
+    TemplateParameterBuilder();
 
-    virtual ~TemplateParameterBuilder() = default;
+    virtual ~TemplateParameterBuilder();
 
-    ITemplateParameterBuilder& addParameter(const TemplateParameter& param) override {
-        parameters_[param.name] = param.defaultValue;
-        return *this;
-    }
+    ITemplateParameterBuilder& addParameter(const TemplateParameter& param) override;
 
     ITemplateParameterBuilder& addParameter(
         const std::string& name,
@@ -243,21 +124,11 @@ public:
         Any defaultValue,
         bool required,
         const std::string& description
-    ) override {
-        parameters_[name] = defaultValue;
-        (void)type;  // 未使用但保留参数接口一致性
-        (void)required;
-        (void)description;
-        return *this;
-    }
+    ) override;
 
-    std::map<std::string, Any> build() const override {
-        return parameters_;
-    }
+    std::map<std::string, Any> build() const override;
 
-    void reset() override {
-        parameters_.clear();
-    }
+    void reset() override;
 };
 
 } // namespace WorkflowSystem

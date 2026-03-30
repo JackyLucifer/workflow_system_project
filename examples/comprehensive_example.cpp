@@ -14,28 +14,29 @@
  * - 工作流管理器
  */
 
-#include "interfaces/workflow_graph.h"
-#include "interfaces/workflow_orchestrator.h"
-#include "interfaces/workflow_observer.h"
-#include "interfaces/metrics_collector.h"
-#include "interfaces/retry_policy.h"
-#include "interfaces/timeout_handler.h"
-#include "interfaces/resource_manager.h"
-#include "interfaces/workflow_manager.h"
+#include "workflow_system/interfaces/workflow_graph.h"
+#include "workflow_system/interfaces/workflow_orchestrator.h"
+#include "workflow_system/interfaces/workflow_observer.h"
+#include "workflow_system/interfaces/metrics_collector.h"
+#include "workflow_system/interfaces/retry_policy.h"
+#include "workflow_system/interfaces/timeout_handler.h"
+#include "workflow_system/interfaces/resource_manager.h"
+#include "workflow_system/interfaces/workflow_manager.h"
 
-#include "implementations/workflow_graph.h"
-#include "implementations/workflow_orchestrator.h"
-#include "implementations/workflow_observer_impl.h"
-#include "implementations/metrics_collector.h"
-#include "implementations/retry_policy.h"
-#include "implementations/timeout_handler.h"
-#include "implementations/filesystem_resource_manager.h"
-#include "implementations/workflow_manager.h"
-#include "implementations/system_facade.h"
+#include "workflow_system/implementations/workflow_graph.h"
+#include "workflow_system/implementations/workflow_orchestrator.h"
+#include "workflow_system/implementations/workflow_observer_impl.h"
+#include "workflow_system/implementations/metrics_collector.h"
+#include "workflow_system/implementations/retry_policy.h"
+#include <fstream>
+#include "workflow_system/implementations/timeout_handler.h"
+#include "workflow_system/implementations/filesystem_resource_manager.h"
+#include "workflow_system/implementations/workflow_manager.h"
+#include "workflow_system/implementations/system_facade.h"
 
-#include "implementations/json_config_manager.h"
+#include "workflow_system/implementations/json_config_manager.h"
 
-#include "core/logger.h"
+#include "workflow_system/core/logger.h"
 #include <iostream>
 #include <memory>
 #include <thread>

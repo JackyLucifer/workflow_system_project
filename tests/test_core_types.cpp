@@ -3,10 +3,10 @@
  * @brief 核心类型测试用例
  */
 
-#include "core/types.h"
-#include "core/any.h"
-#include "core/utils.h"
-#include "core/logger.h"
+#include "workflow_system/core/types.h"
+#include "workflow_system/core/any.h"
+#include "workflow_system/core/utils.h"
+#include "workflow_system/core/logger.h"
 #include "test_framework.h"
 
 using namespace WorkflowSystem;

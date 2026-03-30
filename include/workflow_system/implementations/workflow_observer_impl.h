@@ -6,8 +6,8 @@
 #ifndef WORKFLOW_SYSTEM_WORKFLOW_OBSERVER_IMPL_H
 #define WORKFLOW_SYSTEM_WORKFLOW_OBSERVER_IMPL_H
 
-#include "interfaces/workflow_observer.h"
-#include "core/logger.h"
+#include "workflow_system/interfaces/workflow_observer.h"
+#include "workflow_system/core/logger.h"
 #include <vector>
 #include <memory>
 #include <functional>

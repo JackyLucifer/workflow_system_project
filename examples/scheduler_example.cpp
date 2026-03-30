@@ -3,10 +3,10 @@
  * @brief 工作流调度器示例
  */
 
-#include "implementations/workflow_scheduler_impl.h"
-#include "implementations/workflow_manager.h"
-#include "implementations/workflows/base_workflow.h"
-#include "core/logger.h"
+#include "workflow_system/implementations/workflow_scheduler_impl.h"
+#include "workflow_system/implementations/workflow_manager.h"
+#include "workflow_system/implementations/workflows/base_workflow.h"
+#include "workflow_system/core/logger.h"
 #include <iostream>
 #include <thread>
 #include <chrono>

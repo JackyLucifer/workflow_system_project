@@ -3,14 +3,14 @@
  * @brief 所有模块的综合测试
  */
 
-#include "core/types.h"
-#include "core/any.h"
-#include "core/utils.h"
-#include "core/logger.h"
-#include "implementations/workflow_context.h"
-#include "implementations/filesystem_resource_manager.h"
-#include "implementations/circuit_breaker.h"
-#include "implementations/checkpoint_manager_impl.h"
+#include "workflow_system/core/types.h"
+#include "workflow_system/core/any.h"
+#include "workflow_system/core/utils.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/implementations/workflow_context.h"
+#include "workflow_system/implementations/filesystem_resource_manager.h"
+#include "workflow_system/implementations/circuit_breaker.h"
+#include "workflow_system/implementations/checkpoint_manager_impl.h"
 #include "test_framework.h"
 #include <vector>
 #include <map>

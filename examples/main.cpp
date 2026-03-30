@@ -8,12 +8,12 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include "core/types.h"
-#include "core/logger.h"
-#include "core/utils.h"
-#include "core/any.h"
-#include "implementations/system_facade.h"
-#include "implementations/workflows/base_workflow.h"
+#include "workflow_system/core/types.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/core/utils.h"
+#include "workflow_system/core/any.h"
+#include "workflow_system/implementations/system_facade.h"
+#include "workflow_system/implementations/workflows/base_workflow.h"
 
 using namespace WorkflowSystem;
 

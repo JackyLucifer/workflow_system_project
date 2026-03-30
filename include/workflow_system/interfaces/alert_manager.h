@@ -12,7 +12,7 @@
 #include <memory>
 #include <functional>
 #include <vector>
-#include "core/types.h"
+#include "workflow_system/core/types.h"
 
 namespace WorkflowSystem {
 

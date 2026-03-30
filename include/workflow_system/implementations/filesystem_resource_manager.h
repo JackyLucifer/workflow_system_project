@@ -24,10 +24,10 @@
 #include <memory>
 #include <mutex>
 #include <unordered_map>
-#include "interfaces/resource_manager.h"
-#include "core/utils.h"
-#include "core/logger.h"
-#include "core/types.h"
+#include "workflow_system/interfaces/resource_manager.h"
+#include "workflow_system/core/utils.h"
+#include "workflow_system/core/logger.h"
+#include "workflow_system/core/types.h"
 
 namespace WorkflowSystem {
 
